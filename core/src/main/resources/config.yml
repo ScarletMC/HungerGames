@@ -105,6 +105,9 @@ rollback:
     allow-block-break: false
     # Allow players to take items out of item frames (will be rolled back)
     allow-itemframe-take: false
+    # Allow players to edit signs in the arena (text, dyes, glow ink, wax) and restore them when the game is done
+    # If false, players will not be able to edit signs at all
+    allow-sign-editing: false
     # The amount of blocks that will be restored during rollback per second (this number is actually divided by 10 and restored in 2 tick intervals)
     blocks-per-second: 500
     # When enabled, will not allow players to break blocks during the free-roam time

@@ -65,6 +65,7 @@ public class Config {
     public static boolean preventtrample;
     public static List<String> blocks;
     public static boolean itemframe_take;
+    public static boolean allowSignEditing;
 
     //Random chest
     public static boolean randomChest;
@@ -159,6 +160,7 @@ public class Config {
         preventtrample = config.getBoolean("rollback.prevent-trampling");
         blocks = config.getStringList("rollback.editable-blocks");
         itemframe_take = config.getBoolean("rollback.allow-itemframe-take");
+        allowSignEditing = config.getBoolean("rollback.allow-sign-editing", true);
 
         randomChest = config.getBoolean("random-chest.enabled");
         randomChestInterval = config.getInt("random-chest.interval") * 20;

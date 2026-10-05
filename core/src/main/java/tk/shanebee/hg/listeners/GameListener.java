@@ -708,6 +708,54 @@ public class GameListener implements Listener {
 		}
 	}
 
+	@EventHandler(ignoreCancelled = true)
+	private void onSignChange(SignChangeEvent event) {
+		if (!canEditSign(event.getPlayer(), event.getBlock()))
+            event.setCancelled(true);
+	}
+
+	@EventHandler(ignoreCancelled = true)
+	private void onSignInteract(PlayerInteractEvent event) {
+		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+		Block block = event.getClickedBlock();
+		if (block == null || !Util.isSign(block.getType())) return;
+
+		if (!canEditSign(event.getPlayer(), block))
+            event.setUseInteractedBlock(Event.Result.DENY);
+	}
+
+	/**
+	 * Check if a player can edit a sign, recording the sign for rollback if so
+	 *
+	 * @param player Player editing the sign
+	 * @param block  Sign block about to be edited
+	 * @return True if the edit is allowed
+	 */
+	private boolean canEditSign(Player player, Block block) {
+		if (!gameManager.isInRegion(block.getLocation())) return true;
+		if (playerManager.hasSpectatorData(player)) return false;
+
+		Game game = gameManager.getGame(block.getLocation());
+		Status status = game.getGameArenaData().getStatus();
+		boolean running = status == Status.RUNNING || status == Status.BEGINNING;
+
+		if (playerManager.hasPlayerData(player)) {
+			if (!Config.allowSignEditing) {
+				Util.scm(player, lang.listener_no_edit_block);
+				return false;
+			}
+			if (!running) {
+				Util.scm(player, lang.listener_not_running);
+				return false;
+			}
+		} else if (!player.hasPermission("hg.create")) {
+			return false;
+		}
+
+		if (running) game.getGameBlockData().recordSignEdit(block);
+		return true;
+	}
+
 	@EventHandler
 	private void onDrop(PlayerDropItemEvent event) {
 		Player player = event.getPlayer();

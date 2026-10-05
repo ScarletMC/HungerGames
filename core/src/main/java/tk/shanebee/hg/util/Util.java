@@ -316,6 +316,17 @@ public class Util {
     }
 
     /**
+     * Check if a material is any kind of sign (standing, wall or hanging)
+     * <p>Name based so it works on every supported version</p>
+     *
+     * @param item Material to check
+     * @return True if material is a sign
+     */
+    public static boolean isSign(Material item) {
+        return item.name().endsWith("SIGN");
+    }
+
+    /**
      * Check if a material is a wall sign
      * <p>Due to sign material changes in 1.14 this method checks for both 1.13 and 1.14+</p>
      *

@@ -16,7 +16,9 @@ import tk.shanebee.hg.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Data class for holding a {@link Game Game's} blocks
@@ -27,6 +29,7 @@ public class GameBlockData extends Data {
     private final List<Location> playerChests = new ArrayList<>();
     private final List<BlockState> blocks = new ArrayList<>();
     private final List<ItemFrameData> itemFrameData = new ArrayList<>();
+    private final Set<Location> editedSigns = new HashSet<>();
 
     // LobbySign
     Sign sign1;
@@ -154,6 +157,17 @@ public class GameBlockData extends Data {
     }
 
     /**
+     * Record a sign as edited in the arena to be restored when the game finishes
+     * <p>Only the first edit of each sign is recorded, as that holds its original state.
+     * Must be called before the edit is applied.</p>
+     *
+     * @param block The sign block that is about to be edited
+     */
+    public void recordSignEdit(Block block) {
+        if (editedSigns.add(block.getLocation())) blocks.add(HG.getPlugin().getAdapter().getBlockSnapshot(block));
+    }
+
+    /**
      * Add an item frame to be restored when the game finishes
      *
      * @param itemFrame ItemFrame to be added to the list
@@ -181,6 +195,7 @@ public class GameBlockData extends Data {
      */
     public void resetBlocks() {
         this.blocks.clear();
+        this.editedSigns.clear();
     }
 
     /**
