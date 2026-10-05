@@ -1,10 +1,12 @@
 package tk.shanebee.hg.data;
 
 import io.lumine.mythic.core.mobs.ActiveMob;
+import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -206,6 +208,7 @@ public class MobEntry {
             if (entityClass == null) {
                 return;
             }
+            if (location.getWorld().getDifficulty() == Difficulty.PEACEFUL && Monster.class.isAssignableFrom(entityClass)) return;
             location.getWorld().spawn(location, entityClass, entity -> {
                 if (name != null) {
                     entity.setCustomName(Util.getColString(name));
