@@ -868,8 +868,10 @@ public class GameListener implements Listener {
 	private void onMove(PlayerMoveEvent event) {
 		Game game = plugin.getPlayerManager().getGame(event.getPlayer());
 		if (game == null) return;
-		if (game.getGameArenaData().getStatus() == Status.COUNTDOWN || game.getGameArenaData().getStatus() == Status.WAITING)
-			event.setCancelled(true);
+		if (game.getGameArenaData().getStatus() == Status.COUNTDOWN || game.getGameArenaData().getStatus() == Status.WAITING) {
+            if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getY() != event.getTo().getY() || event.getFrom().getZ() != event.getTo().getZ())
+                event.setCancelled(true);
+        }
 	}
 
 }
