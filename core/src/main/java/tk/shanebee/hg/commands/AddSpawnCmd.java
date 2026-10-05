@@ -2,6 +2,7 @@ package tk.shanebee.hg.commands;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
+import tk.shanebee.hg.HG;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.game.GameArenaData;
 import tk.shanebee.hg.util.Util;
@@ -32,7 +33,7 @@ public class AddSpawnCmd extends BaseCmd {
 				return true;
 			}
 		}
-		d.add(Objects.requireNonNull(l.getWorld()).getName() + ":" + l.getBlockX() + ":" + l.getBlockY() + ":" + l.getBlockZ() + ":" + l.getYaw() + ":" + l.getPitch());
+		d.add(HG.getPlugin().getAdapter().getWorldId(l.getWorld()) + ":" + l.getBlockX() + ":" + l.getBlockY() + ":" + l.getBlockZ() + ":" + l.getYaw() + ":" + l.getPitch());
 		c.set("arenas." + gameArenaData.getName() + ".spawns", d);
 		gameArenaData.addSpawn(l);
 		arenaConfig.saveCustomConfig();

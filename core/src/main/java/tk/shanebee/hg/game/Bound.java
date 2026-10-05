@@ -53,7 +53,7 @@ public class Bound {
      * @param location2 Location 2
      */
     public Bound(Location location, Location location2) {
-        this(Objects.requireNonNull(location.getWorld()).getName(), ((int) location.getX()), ((int) location.getY()),
+        this(HG.getPlugin().getAdapter().getWorldId(Objects.requireNonNull(location.getWorld())), ((int) location.getX()), ((int) location.getY()),
                 ((int) location.getZ()), ((int) location2.getX()), ((int) location2.getY()), ((int) location2.getZ()));
     }
 
@@ -67,7 +67,10 @@ public class Bound {
 	 * @return True if location is within this bound
 	 */
 	public boolean isInRegion(Location loc) {
-		if (!Objects.requireNonNull(loc.getWorld()).getName().equals(world)) return false;
+        World locWorld = loc.getWorld();
+        if (locWorld == null) return false;
+        String locWorldId = HG.getPlugin().getAdapter().getWorldId(locWorld);
+        if (!world.equals(locWorldId)) return false;
 		int cx = loc.getBlockX();
 		int cy = loc.getBlockY();
 		int cz = loc.getBlockZ();
