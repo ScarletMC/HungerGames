@@ -616,7 +616,7 @@ public class GameListener implements Listener {
                     if (fill && BlockUtils.isBreakableBlock(block)) {
                         gameBlockData.recordBlockBreak(block);
                     } else if (!fill && (WATER || LAVA)) {
-                        gameBlockData.recordBlockPlace(HG.getPlugin().getAdapter().getBlockState(block));
+                        gameBlockData.recordBlockPlace(HG.getPlugin().getAdapter().getBlockSnapshot(block));
                     } else {
                         Util.scm(player, plugin.getLang().listener_no_edit_block);
                         event.setCancelled(true);
@@ -648,7 +648,7 @@ public class GameListener implements Listener {
 				Game game = gameManager.getGame(event.getEntity().getLocation());
 				Status status = game.getGameArenaData().getStatus();
 				if (status == Status.RUNNING || status == Status.BEGINNING) {
-					game.getGameBlockData().recordBlockPlace(HG.getPlugin().getAdapter().getBlockState(block));
+					game.getGameBlockData().recordBlockPlace(HG.getPlugin().getAdapter().getBlockSnapshot(block));
 				}
 			}
 		}

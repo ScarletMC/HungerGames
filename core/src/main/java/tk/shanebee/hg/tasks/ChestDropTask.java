@@ -30,7 +30,7 @@ public class ChestDropTask implements Runnable {
         Location newBlockLoc = blockLoc.subtract(0, 1, 0);
         if (prevBlock.getType() != Material.AIR) {
             prevBlock.setType(Material.AIR);
-            game.getGameBlockData().recordBlockPlace(HG.getPlugin().getAdapter().getBlockState(prevBlock));
+            game.getGameBlockData().recordBlockPlace(HG.getPlugin().getAdapter().getBlockSnapshot(prevBlock));
             w.playSound(blockLoc, Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.NEUTRAL, 1f, 1f);
         }
         Block newBlock = w.getBlockAt(newBlockLoc);

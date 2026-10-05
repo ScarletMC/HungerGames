@@ -29,6 +29,11 @@ public class AdapterLegacy implements VersionAdapter {
     }
 
     @Override
+    public BlockState getBlockSnapshot(Block block) {
+        return block.getState();
+    }
+
+    @Override
     public World findWorld(String id) {
         if (id == null) return null;
         World w = Bukkit.getWorld(id);

@@ -11,6 +11,7 @@ import org.bukkit.potion.PotionType;
 
 public interface VersionAdapter {
     BlockState getBlockState(Block block);
+    BlockState getBlockSnapshot(Block block);
     String getWorldId(World world);
     World findWorld(String id);
     double getMaxHealth(LivingEntity entity);

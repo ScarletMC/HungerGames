@@ -52,8 +52,8 @@ public class ChestDrop {
             }
         }
         Block beaconBlock = w.getBlockAt(x,y,z);
-        game.getGameBlockData().recordBlockPlace(HG.getPlugin().getAdapter().getBlockState(beaconBlock));
-        initBeaconBlock = HG.getPlugin().getAdapter().getBlockState(beaconBlock);
+        game.getGameBlockData().recordBlockPlace(HG.getPlugin().getAdapter().getBlockSnapshot(beaconBlock));
+        initBeaconBlock = HG.getPlugin().getAdapter().getBlockSnapshot(beaconBlock);
         beaconBlock.setType(Material.BEACON);
 
         location = new Location(w, x, y+1, z);

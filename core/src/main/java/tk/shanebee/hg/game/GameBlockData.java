@@ -131,17 +131,17 @@ public class GameBlockData extends Data {
         Block top = block.getRelative(BlockFace.UP);
 
         if (!top.getType().isSolid() || !top.getType().isBlock()) {
-            addState(HG.getPlugin().getAdapter().getBlockState(block.getRelative(BlockFace.UP)));
+            addState(HG.getPlugin().getAdapter().getBlockSnapshot(block.getRelative(BlockFace.UP)));
         }
 
         for (BlockFace bf : Util.faces) {
             Block rel = block.getRelative(bf);
 
             if (Util.isAttached(block, rel)) {
-                addState(HG.getPlugin().getAdapter().getBlockState(rel));
+                addState(HG.getPlugin().getAdapter().getBlockSnapshot(rel));
             }
         }
-        addState(HG.getPlugin().getAdapter().getBlockState(block));
+        addState(HG.getPlugin().getAdapter().getBlockSnapshot(block));
     }
 
     /**
