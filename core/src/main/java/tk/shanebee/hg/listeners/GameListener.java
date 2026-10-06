@@ -74,6 +74,7 @@ public class GameListener implements Listener {
 		assert im != null;
 		im.setDisplayName(tsn + Config.trackingstickuses);
 		trackingStick = it;
+        it.setItemMeta(im);
         killManager = plugin.getKillManager();
         BlockUtils.setupBuilder();
 	}
@@ -281,26 +282,34 @@ public class GameListener implements Listener {
 				if (uses == 0) {
 					Util.scm(p, lang.track_empty);
 				} else {
-					PlayerData pd = playerManager.getPlayerData(p);
-					assert pd != null;
-					final Game g = pd.getGame();
-					for (Entity e : p.getNearbyEntities(120, 50, 120)) {
-						if (e instanceof Player) {
-							if (!g.getGamePlayerData().getPlayers().contains(e.getUniqueId())) continue;
-							im.setDisplayName(tsn + (uses - 1));
-							Location l = e.getLocation();
-							int range = (int) p.getLocation().distance(l);
-							Util.scm(p, lang.track_nearest
-									.replace("<player>", e.getName())
-									.replace("<range>", String.valueOf(range))
-									.replace("<location>", getDirection(p.getLocation().getBlock(), l.getBlock())));
-							i.setItemMeta(im);
-							p.updateInventory();
-							return;
-						}
-					}
-					Util.scm(p, lang.track_no_near);
-				}
+                    PlayerData pd = playerManager.getPlayerData(p);
+                    assert pd != null;
+                    final Game g = pd.getGame();
+                    Player nearest = null;
+                    double nearestDistance = Double.MAX_VALUE;
+                    for (Entity e : p.getNearbyEntities(120, 50, 120)) {
+                        if (!(e instanceof Player)) continue;
+                        if (!g.getGamePlayerData().getPlayers().contains(e.getUniqueId())) continue;
+                        double distance = p.getLocation().distanceSquared(e.getLocation());
+                        if (distance < nearestDistance) {
+                            nearestDistance = distance;
+                            nearest = (Player) e;
+                        }
+                    }
+                    if (nearest == null) {
+                        Util.scm(p, lang.track_no_near);
+                        return;
+                    }
+                    im.setDisplayName(tsn + (uses - 1));
+                    Location l = nearest.getLocation();
+                    int range = (int) p.getLocation().distance(l);
+                    Util.scm(p, lang.track_nearest
+                            .replace("<player>", nearest.getName())
+                            .replace("<range>", String.valueOf(range))
+                            .replace("<location>", getDirection(p.getLocation().getBlock(), l.getBlock())));
+                    i.setItemMeta(im);
+                    p.updateInventory();
+                }
 			}
 		}
 
@@ -413,10 +422,10 @@ public class GameListener implements Listener {
         gamePlayerData.getSpectatorGUI().openInventory(player);
     }
 
-	@EventHandler
-	private void onInteract(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
-		Action action = event.getAction();
+    @EventHandler
+    private void onInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        Action action = event.getAction();
         if (playerManager.hasSpectatorData(player)) {
             event.setCancelled(true);
             if (isSpectatorCompass(event)) {
@@ -425,55 +434,54 @@ public class GameListener implements Listener {
         } else if (action != Action.PHYSICAL && playerManager.hasPlayerData(player)) {  //Player is in game
             Status status = Objects.requireNonNull(playerManager.getPlayerData(player)).getGame().getGameArenaData().getStatus();
             if (status != Status.RUNNING && status != Status.BEGINNING) {
-				if (event.getItem() != null)
-					if(event.getItem().getType().equals(Material.getMaterial(Config.leaveitemtype))){
-						Objects.requireNonNull(playerManager.getPlayerData(player)).getGame().getGamePlayerData().leave(player, false);
-					} else if (event.getItem().getType().equals(Material.getMaterial(Config.forcestartitem))){
-						Util.clearInv(player);
-						//playerManager.getPlayerData(player).getGame()
-						Objects.requireNonNull(playerManager.getPlayerData(player)).getGame().startFreeRoam();
-					} else {
-						event.setCancelled(true);
-						Util.scm(player, lang.listener_no_interact);
-					}
+                if (event.getItem() != null)
+                    if(event.getItem().getType().equals(Material.getMaterial(Config.leaveitemtype))){
+                        Objects.requireNonNull(playerManager.getPlayerData(player)).getGame().getGamePlayerData().leave(player, false);
+                    } else if (event.getItem().getType().equals(Material.getMaterial(Config.forcestartitem))){
+                        Util.clearInv(player);
+                        //playerManager.getPlayerData(player).getGame()
+                        Objects.requireNonNull(playerManager.getPlayerData(player)).getGame().startFreeRoam();
+                    } else {
+                        event.setCancelled(true);
+                        Util.scm(player, lang.listener_no_interact);
+                    }
+            } else if ((action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)
+                    && player.getInventory().getItemInMainHand().getType() == Material.STICK) {
+                useTrackStick(player);
             }
         } else if (action == Action.RIGHT_CLICK_BLOCK) {
-			Block block = event.getClickedBlock();
-			assert block != null;
-			if (Util.isWallSign(block.getType())) {
-				Sign sign = (Sign) HG.getPlugin().getAdapter().getBlockState(block);
-				if (sign.getLine(0).equals(Util.getColString(lang.lobby_sign_1_1))) {
-					Game game = gameManager.getGame(sign.getLine(1).substring(2));
-					if (game == null) {
-						Util.scm(player, lang.cmd_delete_noexist);
-					} else {
-						if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
-						    // Process this after event has finished running to prevent double click issues
-							if (HG.getParty().hasParty(player)) {
-								//player is in party
-								if (HG.getParty().isOwner(player)  && ((game.getGamePlayerData().getPlayers().size() + HG.getParty().partySize(player)) <= game.getGameArenaData().getMaxPlayers())){  //player is owner join party
-									Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-										for (Player p : HG.getParty().getMembers(player)) {
-											game.getGamePlayerData().join(p);
-										}
-									});
-								}else if (!HG.getParty().isOwner(player)) {
-									player.sendMessage("You are in a party but not the leader, unable to join game");
-								}
-							}else
-								Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> game.getGamePlayerData().join(player), 2);
-						} else {
-							Util.scm(player, lang.listener_sign_click_hand);
-						}
-					}
-				}
-			}
-		} else if (action == Action.LEFT_CLICK_AIR) {
-			if (player.getInventory().getItemInMainHand().getType().equals(Material.STICK) && playerManager.hasPlayerData(player)) {
-				useTrackStick(player);
-			}
-		}
-	}
+            Block block = event.getClickedBlock();
+            assert block != null;
+            if (Util.isWallSign(block.getType())) {
+                Sign sign = (Sign) HG.getPlugin().getAdapter().getBlockState(block);
+                if (sign.getLine(0).equals(Util.getColString(lang.lobby_sign_1_1))) {
+                    Game game = gameManager.getGame(sign.getLine(1).substring(2));
+                    if (game == null) {
+                        Util.scm(player, lang.cmd_delete_noexist);
+                    } else {
+                        if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+                            // Process this after event has finished running to prevent double click issues
+                            if (HG.getParty().hasParty(player)) {
+                                //player is in party
+                                if (HG.getParty().isOwner(player)  && ((game.getGamePlayerData().getPlayers().size() + HG.getParty().partySize(player)) <= game.getGameArenaData().getMaxPlayers())){  //player is owner join party
+                                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                                        for (Player p : HG.getParty().getMembers(player)) {
+                                            game.getGamePlayerData().join(p);
+                                        }
+                                    });
+                                }else if (!HG.getParty().isOwner(player)) {
+                                    player.sendMessage("You are in a party but not the leader, unable to join game");
+                                }
+                            }else
+                                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> game.getGamePlayerData().join(player), 2);
+                        } else {
+                            Util.scm(player, lang.listener_sign_click_hand);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 	@EventHandler
 	private void onInventoryClick(InventoryClickEvent e) {
